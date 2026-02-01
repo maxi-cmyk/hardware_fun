@@ -1,0 +1,8 @@
+.DS_Store
+.pio/
+.vscode/
+shared.h
+*.o
+*.bin
+*.elf
+.c_cpp_properties.json
