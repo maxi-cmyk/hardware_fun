@@ -14,10 +14,10 @@ struct AudioFrame {
 #define RGB_G 10
 #define RGB_B 11
 
-float beatThreshold = 10.0;     // The "Tripwire" for detecting a beat
-float decayRate = 0.95;         // How fast the tripwire falls (0.90 = Fast, 0.99 = Slow)
-int currentLed = 0;             // Which discrete LED is lit (0-3)
-unsigned long lastBeatTime = 0; // Timer to prevent "double triggering"
+float beatThreshold = 10.0;     // min to detect beat
+float decayRate = 0.95;         // how fast the tripwire falls (0.90 = Fast, 0.99 = Slow)
+int currentLed = 0;             // [0,3]
+unsigned long lastBeatTime = 0; // prevent "double triggering"
 
 void setup() {
   pinMode(RGB_R, OUTPUT);
@@ -26,10 +26,10 @@ void setup() {
 
   DDRD |= 0xF0; 
 
-  //debug
-  Serial.begin(9600);
-  Serial.println("System Ready: Rhythm Chaser Mode");
-}
+//debug
+//   Serial.begin(9600);
+//   Serial.println("System Ready");
+// }
 
 void loop() {
   AudioFrame currentFrame = sampleAudio();
@@ -49,11 +49,11 @@ AudioFrame sampleAudio() {
   while (millis() - startMillis < SAMPLE_WINDOW) {
     int sample = analogRead(MIC_PIN);
 
-    // Track Amplitude (Volume)
+    //volume
     if (sample > maxVal) maxVal = sample;
     if (sample < minVal) minVal = sample;
 
-    // Track Frequency (Pitch)
+    //pitch
     bool isHigh = (sample > (CENTER_VOLTAGE + 10));
     
     if (isHigh && !prevHighFreq) {
@@ -75,20 +75,21 @@ void processAudio(AudioFrame input) {
   if (input.amplitude > beatThreshold && (millis() - lastBeatTime > 100)) {
     isBeat = true;
     lastBeatTime = millis();
-    
     currentLed++; 
+    
     if (currentLed > 3) currentLed = 0; //loop
     
-    // Raise the tripwire to the current volume so we don't trigger twice
+    //change min to curr volume to prevent double 
     beatThreshold = input.amplitude; 
   } else {
-    // Slowly lower the tripwire to catch the next beat
+    //lower the tripwire to catch the next beat
     beatThreshold = beatThreshold * decayRate;
     
-    // Safety: Don't let threshold go below noise floor
+    
     if (beatThreshold < NOISE_FLOOR + 2) beatThreshold = NOISE_FLOOR + 2;
   }
 
+  //change which LED lights up based on beat 
   byte portState = PORTD & 0x0F; 
   portState |= (1 << (4 + currentLed)); 
   PORTD = portState;
@@ -100,7 +101,7 @@ void processAudio(AudioFrame input) {
     brightness *= 0.8; // Smooth fade
   }
 
-  // Calculate RGB Color based on frequency
+  //RGB Color based on frequency
   int colorPos = map(constrain(input.freqCount, 0, 15), 0, 15, 0, 255);
   int r = 0, g = 0, b = 0;
   
@@ -111,8 +112,7 @@ void processAudio(AudioFrame input) {
   } else {
     colorPos -= 170; b = 255 - colorPos * 3; r = colorPos * 3;
   }
-
-  // Apply the brightness pulse and write to PWM pins
+  
   analogWrite(RGB_R, (int)(r * brightness / 255));
   analogWrite(RGB_G, (int)(g * brightness / 255));
   analogWrite(RGB_B, (int)(b * brightness / 255));
