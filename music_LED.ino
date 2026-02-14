@@ -1,5 +1,5 @@
 struct AudioFrame {
-  int amplitude;      // Volume Spike (Max - Min)
+  int amplitude;      // volume Spike (Max - Min)
   int freqCount;      // Pitch 
 };
 
