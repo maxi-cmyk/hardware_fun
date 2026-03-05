@@ -1,4 +1,4 @@
-# ESP32 Asteroids
+# ESP32 Asteroids (1D motion only, 2D motion WIP)
 
 A breadboard-based Asteroids arcade game built on an ESP32, rendered on a 128×64 SSD1306 OLED display. It features analog joystick controls, a fire button, and an active buzzer for retro sound effects. Powered via USB-C, the game boots instantly and includes persistent high scores, scaling difficulty, and a multiplier streak system.
 
