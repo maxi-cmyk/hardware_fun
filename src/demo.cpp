@@ -67,6 +67,7 @@ bool demoUpdate() {
 
   // AI decision: dodge first, then aim
   float aiJoyX = 0;
+  float aiJoyY = 0.0f;
   float threatX;
   bool dodging = findThreat(demoShip.x, demoShip.y, threatX);
 
@@ -98,7 +99,7 @@ bool demoUpdate() {
   // AI auto-fire — only shoot if an asteroid is roughly in line of fire
   bool aligned = hasTarget && fabsf(tX - demoShip.x) < 8.0f && tY < demoShip.y;
   if (aligned && now - lastDemoShot > DEMO_FIRE_INTERVAL) {
-    if (bulletsFire(demoShip.x, demoShip.y - (SHIP_RADIUS + 2))) {
+    if (bulletsFire(demoShip.x, demoShip.y - (SHIP_RADIUS + 1))) {
       soundPlay(SFX_SHOOT);
       lastDemoShot = now;
     }

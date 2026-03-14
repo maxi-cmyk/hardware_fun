@@ -43,7 +43,7 @@
 // ── Asteroids ────────────────────────────────
 #define ASTEROID_LARGE_R   11
 #define ASTEROID_MEDIUM_R  6
-#define ASTEROID_SMALL_R   3
+#define ASTEROID_SMALL_R   4
 #define ASTEROID_MAX       15
 #define ASTEROID_INITIAL   3     // large asteroids at game start
 #define ASTEROID_VERTICES  8

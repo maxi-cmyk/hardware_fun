@@ -256,7 +256,7 @@ static void updatePlaying() {
 
   // ── Fire button ──
   if (inp.firePressed) {
-    if (bulletsFire(ship.x, ship.y - (SHIP_RADIUS + 2))) {
+    if (bulletsFire(ship.x, ship.y - (SHIP_RADIUS + 1))) {
       soundPlay(SFX_SHOOT);
       shotsFired++;
     }

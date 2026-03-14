@@ -20,18 +20,22 @@ void shipInit(Ship& ship) {
 void shipUpdate(Ship& ship, float joyX) {
   if (!ship.alive) return;
 
-  // Direct horizontal movement — stops instantly when joystick released
+  // 1. Direct Snappy Movement (X-axis only, no friction)
   if (joyX != 0.0f) {
     ship.x += joyX * SHIP_MAX_SPEED;
   }
+  
+  // 3. Reset velocity as we're not using it anymore for sliding
+  ship.vx = 0.0f;
+  ship.vy = 0.0f;
 
-  // Clamp to screen edges — stay stuck if pushed against wall
-  if (ship.x < 0){
-    ship.x = 0;
-  }              
-  if (ship.x >= SCREEN_W){
-    ship.x = SCREEN_W - 1;
-  }      
+  // 4. Hard border clamps
+  if (ship.x < SHIP_RADIUS) {
+    ship.x = SHIP_RADIUS;
+  }
+  if (ship.x >= SCREEN_W - SHIP_RADIUS) {
+    ship.x = SCREEN_W - SHIP_RADIUS;
+  }
 
   // Invincibility timer
   if (ship.invincible && millis() >= ship.invincibleUntil) {
@@ -40,7 +44,7 @@ void shipUpdate(Ship& ship, float joyX) {
 }
 
 void shipWrap(Ship& ship) {
-  // Unused — kept for linker compatibility
+  // Unused
 }
 
 void shipDraw(Ship& ship, Adafruit_SSD1306& display) {

@@ -42,10 +42,9 @@ void bulletsUpdate() {
 void bulletsDraw(Adafruit_SSD1306& display) {
   for (int i = 0; i < BULLET_MAX; i++) {
     if (!pool[i].active) continue;
-    int x = (int)pool[i].x;
-    int y = (int)pool[i].y;
-    // 3-pixel vertical line so the bullet is visible at speed
-    display.drawFastVLine(x, y - 2, 3, SSD1306_WHITE);
+    int x1 = (int)pool[i].x;
+    int y1 = (int)pool[i].y;
+    display.drawFastVLine(x1, y1 - 2, 3, SSD1306_WHITE);
   }
 }
 

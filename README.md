@@ -54,9 +54,9 @@ This project is built using PlatformIO.
 1. Install [PlatformIO](https://platformio.org/).
 2. Clone this repository.
 3. Plug in your ESP32.
-4. Build and upload using the PlatformIO CLI:
+4. Build and upload using the PlatformIO executable. Since `pio` is often not in the PATH by default, you may need to use its absolute path:
    ```bash
-   pio run --target upload
+   ~/.platformio/penv/bin/pio run -t upload
    ```
 
 ## Controls

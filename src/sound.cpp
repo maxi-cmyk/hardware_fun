@@ -1,39 +1,39 @@
 #include "sound.h"
 #include "config.h"
 
-// Active buzzer: fixed frequency oscillator inside.
-// Control volume/rhythm via PWM duty cycle (0-255).
-// Pattern = array of {duty, durationMs} steps.
+// Passive buzzer: variable frequency oscillator.
+// Control pitch via frequency in Hz.
+// Pattern = array of {freq, durationMs} steps.
 
 struct SoundStep {
-  uint8_t duty;       // 0 = silent, 255 = max volume
+  uint16_t freq;       // 0 = silent, else frequency in Hz
   uint16_t durationMs;
 };
 
 // ── Sound patterns ──
 
 static const SoundStep PAT_SHOOT[] = {
-  {200, 30},
+  {1000, 10}, {800, 10}, {600, 10},
   {0, 0}
 };
 
 static const SoundStep PAT_ASTEROID_SMALL[] = {
-  {180, 20}, {0, 20}, {180, 20},
+  {1200, 20}, {0, 20}, {1200, 20},
   {0, 0}
 };
 
 static const SoundStep PAT_ASTEROID_LARGE[] = {
-  {220, 25}, {0, 15}, {160, 25}, {0, 15}, {100, 25},
+  {200, 25}, {0, 15}, {150, 25}, {0, 15}, {100, 25},
   {0, 0}
 };
 
 static const SoundStep PAT_DEATH[] = {
-  {255, 100}, {200, 100}, {150, 100}, {100, 100}, {50, 100},
+  {300, 100}, {250, 100}, {200, 100}, {150, 100}, {100, 100},
   {0, 0}
 };
 
 static const SoundStep PAT_STREAK_UP[] = {
-  {100, 30}, {0, 10}, {180, 30}, {0, 10}, {255, 30},
+  {440, 30}, {0, 10}, {554, 30}, {0, 10}, {659, 30}, // A4, C#5, E5
   {0, 0}
 };
 
@@ -43,27 +43,27 @@ static const SoundStep PAT_STREAK_LOST[] = {
 };
 
 static const SoundStep PAT_THRUST[] = {
-  {120, 15}, {0, 15},
+  {100, 15}, {150, 15},
   {0, 0}
 };
 
 static const SoundStep PAT_MENU_SELECT[] = {
-  {200, 15},
+  {880, 15}, // A5
   {0, 0}
 };
 
 static const SoundStep PAT_HIGHSCORE[] = {
-  {200, 40}, {0, 30}, {200, 40}, {0, 30}, {200, 40}, {0, 30}, {255, 40}, {0, 30}, {255, 60},
+  {523, 40}, {0, 30}, {523, 40}, {0, 30}, {523, 40}, {0, 30}, {659, 40}, {0, 30}, {784, 60}, // C5, E5, G5
   {0, 0}
 };
 
 static const SoundStep PAT_GAMEOVER[] = {
-  {255, 200}, {200, 200}, {150, 200}, {100, 200}, {50, 200},
+  {200, 200}, {180, 200}, {160, 200}, {140, 200}, {120, 200},
   {0, 0}
 };
 
 static const SoundStep PAT_UFO[] = {
-  {150, 200}, {0, 200},
+  {1000, 200}, {500, 200},
   {0, 0}
 };
 
@@ -91,10 +91,20 @@ static const SoundStep* getPattern(SoundFX fx) {
   }
 }
 
+// ── Helpers ──
+static void setBuzzer(uint16_t freq) {
+  if (freq > 0) {
+    ledcWriteTone(BUZZ_CHANNEL, freq);
+  } else {
+    ledcWriteTone(BUZZ_CHANNEL, 0);
+    ledcWrite(BUZZ_CHANNEL, 0); // Force PWM duty to 0 to be safe
+  }
+}
+
 void soundInit() {
   ledcSetup(BUZZ_CHANNEL, BUZZ_FREQ, BUZZ_RES);
   ledcAttachPin(PIN_BUZZER, BUZZ_CHANNEL);
-  ledcWrite(BUZZ_CHANNEL, 0);
+  setBuzzer(0);
   currentFX = SFX_NONE;
   currentPattern = nullptr;
 }
@@ -115,7 +125,8 @@ void soundPlay(SoundFX fx) {
   currentPattern = pat;
   currentStep = 0;
   stepStartMs = millis();
-  ledcWrite(BUZZ_CHANNEL, pat[0].duty);
+  
+  setBuzzer(pat[0].freq);
 }
 
 void soundUpdate() {
@@ -131,7 +142,7 @@ void soundUpdate() {
     // Check if pattern is finished (terminated by {0, 0})
     if (currentPattern[currentStep].durationMs == 0) {
       // Pattern done
-      ledcWrite(BUZZ_CHANNEL, 0);
+      setBuzzer(0);
       currentFX = SFX_NONE;
       currentPattern = nullptr;
       return;
@@ -139,12 +150,12 @@ void soundUpdate() {
 
     // Advance to next step
     stepStartMs = now;
-    ledcWrite(BUZZ_CHANNEL, currentPattern[currentStep].duty);
+    setBuzzer(currentPattern[currentStep].freq);
   }
 }
 
 void soundStop() {
-  ledcWrite(BUZZ_CHANNEL, 0);
+  setBuzzer(0);
   currentFX = SFX_NONE;
   currentPattern = nullptr;
 }
